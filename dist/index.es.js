@@ -172,13 +172,14 @@ var SuggestionPortal = function (_React$Component) {
     var _this = possibleConstructorReturn(this, (SuggestionPortal.__proto__ || Object.getPrototypeOf(SuggestionPortal)).call(this));
 
     _this.state = {
+      suggestions: [],
       filteredSuggestions: []
     };
 
     _this.componentDidMount = function () {
       _this.adjustPosition();
-      window.addEventListener('resize', _this.adjustPosition.bind(_this));
-      window.addEventListener('scroll', _this.adjustPosition.bind(_this));
+      window.addEventListener("resize", _this.adjustPosition.bind(_this));
+      window.addEventListener("scroll", _this.adjustPosition.bind(_this));
     };
 
     _this.componentDidUpdate = function () {
@@ -186,13 +187,16 @@ var SuggestionPortal = function (_React$Component) {
     };
 
     _this.componentWillUnmount = function () {
-      window.removeEventListener('resize', _this.adjustPosition.bind(_this));
-      window.removeEventListener('scroll', _this.adjustPosition.bind(_this));
+      window.removeEventListener("resize", _this.adjustPosition.bind(_this));
+      window.removeEventListener("scroll", _this.adjustPosition.bind(_this));
+    };
+
+    _this.onUpdatedSelections = function (suggestions) {
+      _this.state.suggestions = suggestions;
     };
 
     _this.setCallbackSuggestion = function () {
       if (_this.state.filteredSuggestions.length) {
-
         _this.props.callback.suggestion = _this.state.filteredSuggestions[_this.selectedIndex];
       } else {
         _this.props.callback.suggestion = undefined;
@@ -209,11 +213,10 @@ var SuggestionPortal = function (_React$Component) {
       var match = _this.matchCapture();
       if (match) {
         if (e.keyCode !== DOWN_ARROW_KEY && e.keyCode !== UP_ARROW_KEY && e.keyCode !== ENTER_KEY && e.keyCode !== ESCAPE_KEY) {
-
           _this.selectedIndex = 0;
           var newFilteredSuggestions = _this.getFilteredSuggestions(e.key);
 
-          if (typeof newFilteredSuggestions.then === 'function') {
+          if (typeof newFilteredSuggestions.then === "function") {
             newFilteredSuggestions.then(function (newFilteredSuggestions) {
               _this.setFilteredSuggestions(newFilteredSuggestions);
             }).catch(function () {
@@ -229,7 +232,6 @@ var SuggestionPortal = function (_React$Component) {
     };
 
     _this.onKeyDown = function (e, editor, next) {
-
       var match = _this.matchCapture();
 
       if (match) {
@@ -283,7 +285,7 @@ var SuggestionPortal = function (_React$Component) {
           capture = _this$props.capture;
 
 
-      if (!value.selection.anchor.key) return '';
+      if (!value.selection.anchor.key) return "";
 
       var anchorText = value.anchorText,
           selection = value.selection;
@@ -309,10 +311,13 @@ var SuggestionPortal = function (_React$Component) {
 
     _this.getFilteredSuggestions = function () {
       var _this$props2 = _this.props,
-          suggestions = _this$props2.suggestions,
           value = _this$props2.value,
           capture = _this$props2.capture,
           resultSize = _this$props2.resultSize;
+      /* Load the suggstions from the state not from the props 
+      for the dynamic suggestions loading */
+
+      var suggestions = _this.state.suggestions;
 
 
       if (!value.selection.anchor.key) return [];
@@ -327,7 +332,7 @@ var SuggestionPortal = function (_React$Component) {
       var matchText = _this.getMatchText(currentWord, capture);
       matchText = matchText.slice(1, matchText.length);
 
-      if (typeof suggestions === 'function') {
+      if (typeof suggestions === "function") {
         return suggestions(matchText);
       } else if (matchText) {
         return suggestions.filter(function (suggestion) {
@@ -347,16 +352,16 @@ var SuggestionPortal = function (_React$Component) {
         _this.showPortal();
         var rect = position();
         if (rect) {
-          _this.portalContainer.current.style.display = 'block';
+          _this.portalContainer.current.style.display = "block";
           _this.portalContainer.current.style.opacity = 1;
           if (_this.alignTop) {
             var height = _this.portalContainer.current.clientHeight;
-            _this.portalContainer.current.style.top = rect.top + window.scrollY - height - 14 + 'px'; // eslint-disable-line no-mixed-operators
+            _this.portalContainer.current.style.top = rect.top + window.scrollY - height - 14 + "px"; // eslint-disable-line no-mixed-operators
           } else {
-            _this.portalContainer.current.style.top = rect.top + window.scrollY + 'px'; // eslint-disable-line no-mixed-operators
+            _this.portalContainer.current.style.top = rect.top + window.scrollY + "px"; // eslint-disable-line no-mixed-operators
           }
 
-          _this.portalContainer.current.style.left = rect.left + window.scrollX + 'px'; // eslint-disable-line no-mixed-operators
+          _this.portalContainer.current.style.left = rect.left + window.scrollX + "px"; // eslint-disable-line no-mixed-operators
         }
       } else if (match === undefined) {
         _this.hidePortal();
@@ -379,14 +384,13 @@ var SuggestionPortal = function (_React$Component) {
 
     _this.hidePortal = function () {
       if (_this.isOpen) {
-        _this.portalContainer.current.removeAttribute('style');
+        _this.portalContainer.current.removeAttribute("style");
         _this.isOpen = false;
         _this.props.onClose && _this.props.onClose();
       }
     };
 
     _this.closePortal = function () {
-
       if (!_this.portalContainer.current) return;
 
       var match = _this.matchCapture();
@@ -421,10 +425,10 @@ var SuggestionPortal = function (_React$Component) {
           ClickOutside,
           { onClickOutside: _this.clickOutside },
           React.createElement(
-            'div',
-            { className: 'suggestion-portal', ref: _this.portalContainer },
+            "div",
+            { className: "suggestion-portal", ref: _this.portalContainer },
             React.createElement(
-              'ul',
+              "ul",
               null,
               filteredSuggestions.map(function (suggestion, index) {
                 return React.createElement(SuggestionItem, {
@@ -451,9 +455,11 @@ var SuggestionPortal = function (_React$Component) {
     props.callback.onKeyDown = _this.onKeyDown;
     props.callback.onKeyUp = _this.onKeyUp;
     props.callback.onEnter = props.onEnter;
+    props.callback.onUpdatedSelections = _this.onUpdatedSelections;
+    console.log("This is the data passed to the internal ", props);
 
     _this.selectedIndex = 0;
-    if (typeof props.suggestions === 'function') {
+    if (typeof props.suggestions === "function") {
       props.callback.suggestion = undefined;
     } else {
       _this.state.filteredSuggestions = props.suggestions.slice(0, props.resultSize ? props.resultSize : RESULT_SIZE);
@@ -461,6 +467,11 @@ var SuggestionPortal = function (_React$Component) {
     }
     return _this;
   }
+
+  /* Add new 
+    Trigger update new suggestions from parent
+  */
+
 
   return SuggestionPortal;
 }(React.Component);

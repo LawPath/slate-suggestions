@@ -24,6 +24,7 @@ function SuggestionsPlugin(opts) {
 
     next();
   }
+  
 
   return {
     onKeyDown,
